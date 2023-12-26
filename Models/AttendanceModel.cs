@@ -14,4 +14,5 @@ public class AttendanceModel
     [ForeignKey("CourseModel")]
     public int CourseId { get; set; }
     public CourseModel Course { get; set; }
+
 }

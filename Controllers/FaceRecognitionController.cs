@@ -29,8 +29,8 @@ namespace InzynierkaApi.Controllers
             public IFormFile SourceImage { get; set; }
         }
         // In FaceRecognitionController
-        [HttpPost("compare-faces")]
-        public async Task<IActionResult> CompareFaces([FromForm] CompareFacesRequestModel model)
+        [HttpPost("compare/{courseId}")]
+        public async Task<IActionResult> CompareFaces([FromForm] CompareFacesRequestModel model,int courseId)
         {
             if (model == null || model.SourceImage == null)
             {
@@ -44,15 +44,14 @@ namespace InzynierkaApi.Controllers
                     return BadRequest("Only .jpg images are supported.");
                 }
 
-                var sourceImagePath = Path.GetTempFileName();
-                using (var stream = new FileStream(sourceImagePath, FileMode.Create))
+                byte[] sourceImageContent;
+                using (var stream = new MemoryStream())
                 {
                     await model.SourceImage.CopyToAsync(stream);
+                    sourceImageContent = stream.ToArray();
                 }
 
-                var matchedImage = await _faceRecognitionService.CompareFacesAsync(sourceImagePath);
-
-                System.IO.File.Delete(sourceImagePath);
+                var matchedImage = await _faceRecognitionService.CompareFacesAsync(sourceImageContent,courseId);
 
                 if (!string.IsNullOrEmpty(matchedImage))
                 {

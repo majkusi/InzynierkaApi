@@ -33,13 +33,13 @@ builder.Services.AddScoped<FaceRecognitionService>(_ =>
     var dbContext = _.GetRequiredService<AttendanceContext>();
     var awsAccesKey = builder.Configuration["AWS:AccessKey"];
     var awsSecretKey = builder.Configuration["AWS:SecretKey"];
-    return new FaceRecognitionService(similarityThreshold, awsAccesKey, awsSecretKey);
+    var attendanceRepository = _.GetRequiredService<IAttendanceRepository>();
+    return new FaceRecognitionService(similarityThreshold, awsAccesKey, awsSecretKey, attendanceRepository);
 });
 builder.Services.AddScoped<AmazonRekognitionClient>(_ =>
 {
     var awsAccessKey = builder.Configuration["AWS:AccessKey"];
     var awsSecretKey = builder.Configuration["AWS:SecretKey"];
-    
     return new AmazonRekognitionClient(awsAccessKey, awsSecretKey, Amazon.RegionEndpoint.EUCentral1); // Replace YourRegion with your actual AWS region
 });
 // Db connectrion

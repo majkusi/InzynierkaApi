@@ -1,6 +1,7 @@
 ﻿using InzynierkaApi.Context;
 using InzynierkaApi.Models;
 using InzynierkaApi.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace InzynierkaApi.Repositories
 {
@@ -24,7 +25,13 @@ namespace InzynierkaApi.Repositories
         {
             return context.Students.Find(id);
         }
-
+  
+        public IEnumerable<StudentModel> GetStudentsWithImages()
+        {
+            return context.Students
+                .Include(s => s.StudentImages) // Załaduj relację StudentImages
+                .ToList();
+        }
         // Implement other interface methods...
     }
 }

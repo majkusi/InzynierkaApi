@@ -3,6 +3,9 @@ using Amazon.Rekognition.Model;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using InzynierkaApi.Context;
+using InzynierkaApi.Models;
+using InzynierkaApi.Repositories;
 
 namespace InzynierkaApi.Services
 {
@@ -11,11 +14,12 @@ namespace InzynierkaApi.Services
         private const string TargetImageFolder = "C:\\Users\\igor3\\OneDrive\\Obrazy\\AttendanceCheckAppTestImages"; // Change this to the actual folder path
         private readonly float _similarityThreshold;
         private readonly AmazonRekognitionClient _rekognitionClient;
-
-        public FaceRecognitionService(float similarityThreshold, string awsAccessKey, string awsSecretKey)
+        private readonly IAttendanceRepository _attendanceRepository;
+        public FaceRecognitionService(float similarityThreshold, string awsAccessKey, string awsSecretKey, IAttendanceRepository attendanceRepository)
         {
             _similarityThreshold = similarityThreshold;
             _rekognitionClient = new AmazonRekognitionClient(awsAccessKey, awsSecretKey, Amazon.RegionEndpoint.EUCentral1);
+            _attendanceRepository = attendanceRepository;
         }
 
         public async Task<string> CompareFacesAsync(string sourceImagePath)
@@ -70,6 +74,7 @@ namespace InzynierkaApi.Services
                             Console.WriteLine($"Match found with confidence above {_similarityThreshold}% in image: {jpgFilePath}");
                             matchedImage = Path.GetFileName(jpgFilePath);
                             matchFound = true;
+                            _attendanceRepository.PutNewAttendance(4, 4, true);
                             // If a match is found, stop the loop
                             break;
                         }
