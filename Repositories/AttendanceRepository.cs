@@ -1,5 +1,6 @@
 ﻿using InzynierkaApi.Context;
 using InzynierkaApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace InzynierkaApi.Repositories;
 
@@ -19,12 +20,17 @@ public class AttendanceRepository : IAttendanceRepository
             .ToList();
     }
 
-    public List<AttendanceModel> GetAttendanceListByStudent(int studentId)
+    public List<AttendanceModel> GetAttendanceListByStudent(int albumId)
     {
-        return context.AttendanceList
-            .Where(attendance => attendance.StudentId == studentId)
+        var attendanceList = context.AttendanceList
+            .Include(a => a.Student)
+            .Include(a => a.Course)
+            .Where(attendance => attendance.Student.AlbumId == albumId)
             .ToList();
+
+        return attendanceList;
     }
+
 
     public AttendanceModel PutNewAttendance(int studentId, int courseId, bool isPresent)
     {
@@ -41,5 +47,6 @@ public class AttendanceRepository : IAttendanceRepository
         return newAttendance;
     }
 
+ 
 
 }

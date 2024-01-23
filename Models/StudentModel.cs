@@ -17,6 +17,7 @@ namespace InzynierkaApi.Models
         public int AlbumId { get; set; } = albumId;
         public string? Department { get; set; } = department;
         public string? FieldOfStudy { get; set; } = fieldOfStudy;
+        [ForeignKey("CourseModel")]
         public List<int>? CourseId { get; set; }
         public List<StudentImagesModel>? StudentImages { get; set; }
     }

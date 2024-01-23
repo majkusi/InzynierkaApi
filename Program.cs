@@ -26,6 +26,7 @@ builder.Services.AddScoped<ICourseRepository,CourseRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<ITeacherRepository,TeacherRepository>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
 builder.Services.AddScoped<FaceRecognitionService>(_ =>
 {
@@ -34,7 +35,8 @@ builder.Services.AddScoped<FaceRecognitionService>(_ =>
     var awsAccesKey = builder.Configuration["AWS:AccessKey"];
     var awsSecretKey = builder.Configuration["AWS:SecretKey"];
     var attendanceRepository = _.GetRequiredService<IAttendanceRepository>();
-    return new FaceRecognitionService(similarityThreshold, awsAccesKey, awsSecretKey, attendanceRepository);
+    var studentRepository = _.GetRequiredService<IStudentRepository>();
+    return new FaceRecognitionService(similarityThreshold, awsAccesKey, awsSecretKey, attendanceRepository, studentRepository);
 });
 builder.Services.AddScoped<AmazonRekognitionClient>(_ =>
 {

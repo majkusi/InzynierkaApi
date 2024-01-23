@@ -25,4 +25,11 @@ public class StudentController : Controller
         var course = _studentRepository.GetStudentById(id);
         return Ok(course);
     }
+
+    [HttpGet("/GetByCourse/{id}")]
+    public IActionResult GetByCourse(int id)
+    {
+        var course = _studentRepository.GetStudentsByCourse(id);
+        return Ok(course);
+    }
 }

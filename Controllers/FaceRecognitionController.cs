@@ -28,7 +28,6 @@ namespace InzynierkaApi.Controllers
         {
             public IFormFile SourceImage { get; set; }
         }
-        // In FaceRecognitionController
         [HttpPost("compare/{courseId}")]
         public async Task<IActionResult> CompareFaces([FromForm] CompareFacesRequestModel model,int courseId)
         {
@@ -55,7 +54,7 @@ namespace InzynierkaApi.Controllers
 
                 if (!string.IsNullOrEmpty(matchedImage))
                 {
-                    return Ok($"Face comparison completed successfully. Matched image: {matchedImage}");
+                    return Ok(matchedImage);
                 }
                 else
                 {

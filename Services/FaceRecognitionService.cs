@@ -1,96 +1,71 @@
 ﻿using Amazon.Rekognition;
 using Amazon.Rekognition.Model;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using InzynierkaApi.Context;
 using InzynierkaApi.Models;
 using InzynierkaApi.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace InzynierkaApi.Services
 {
     public class FaceRecognitionService
     {
-        private const string TargetImageFolder = "C:\\Users\\igor3\\OneDrive\\Obrazy\\AttendanceCheckAppTestImages"; // Change this to the actual folder path
         private readonly float _similarityThreshold;
         private readonly AmazonRekognitionClient _rekognitionClient;
         private readonly IAttendanceRepository _attendanceRepository;
-        public FaceRecognitionService(float similarityThreshold, string awsAccessKey, string awsSecretKey, IAttendanceRepository attendanceRepository)
+        private readonly IStudentRepository _studentRepository;
+        public FaceRecognitionService(float similarityThreshold, string awsAccessKey, string awsSecretKey, IAttendanceRepository attendanceRepository, IStudentRepository studentRepository)
         {
             _similarityThreshold = similarityThreshold;
             _rekognitionClient = new AmazonRekognitionClient(awsAccessKey, awsSecretKey, Amazon.RegionEndpoint.EUCentral1);
             _attendanceRepository = attendanceRepository;
+            _studentRepository = studentRepository;
         }
-
-        public async Task<string> CompareFacesAsync(string sourceImagePath)
+        public async Task<string> CompareFacesAsync(byte[] sourceImage, int courseId)
         {
-            string matchedImage = null;
+            string matchedImage = String.Empty;
             bool matchFound = false;
+            StudentModel? student = null;
 
             try
             {
-                Console.WriteLine($"Reading source image from: {sourceImagePath}");
+                Console.WriteLine("Reading source image...");
 
-                byte[] sourceImageContent = await File.ReadAllBytesAsync(sourceImagePath);
-                var imageSource = await LoadImageAsync(sourceImageContent);
-
-                if (imageSource == null)
-                {
-                    Console.WriteLine("Failed to load the source image.");
-                    return matchedImage;
-                }
+                var imageSource = await LoadImageAsync(sourceImage);
 
                 Console.WriteLine("Source image loaded successfully.");
 
-                var jpgFiles = Directory.GetFiles(TargetImageFolder, "*.jpg");
+                var allStudentImages = _studentRepository.GetStudentsWithImages();
 
-                foreach (var jpgFilePath in jpgFiles)
+                var tasks = allStudentImages.SelectMany(studentImage => studentImage.StudentImages.Select(image => Task.Run(async () =>
                 {
-                    try
+                    Console.WriteLine($"Reading target image from StudentImagesModel with ImageId: {image.ImageId}");
+
+                    var imageTarget = await LoadImageAsync(image.ImageData);
+
+                    var compareFacesRequest = new CompareFacesRequest
                     {
-                        Console.WriteLine($"Reading target image from: {jpgFilePath}");
+                        SourceImage = imageSource,
+                        TargetImage = imageTarget,
+                        SimilarityThreshold = _similarityThreshold,
+                    };
 
-                        byte[] targetImageContent = await File.ReadAllBytesAsync(jpgFilePath);
-                        var imageTarget = await LoadImageAsync(targetImageContent);
+                    var compareFacesResponse = await _rekognitionClient.CompareFacesAsync(compareFacesRequest);
 
-                        if (imageTarget == null)
-                        {
-                            Console.WriteLine($"Failed to load target image: {jpgFilePath}");
-                            continue;
-                        }
-
-                        var compareFacesRequest = new CompareFacesRequest
-                        {
-                            SourceImage = imageSource,
-                            TargetImage = imageTarget,
-                            SimilarityThreshold = _similarityThreshold,
-                        };
-
-                        var compareFacesResponse = await _rekognitionClient.CompareFacesAsync(compareFacesRequest);
-
-                        // Verification of comparison results
-                        if (compareFacesResponse.FaceMatches.Any(match => match.Similarity >= _similarityThreshold))
-                        {
-                            Console.WriteLine($"Match found with confidence above {_similarityThreshold}% in image: {jpgFilePath}");
-                            matchedImage = Path.GetFileName(jpgFilePath);
-                            matchFound = true;
-                            _attendanceRepository.PutNewAttendance(4, 4, true);
-                            // If a match is found, stop the loop
-                            break;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"No match found in image: {jpgFilePath}");
-                        }
-                    }
-                    catch (Exception ex)
+                    if (compareFacesResponse.FaceMatches.Any(match => match.Similarity >= _similarityThreshold))
                     {
-                        Console.WriteLine($"Error processing target image {jpgFilePath}: {ex.Message}");
-                        Console.WriteLine(ex.StackTrace);
+                        Console.WriteLine($"Match found with confidence above {_similarityThreshold}% in image with ImageId: {image.ImageId}");
+                        matchedImage = image.ImageId.ToString();
+                        matchFound = true;
+                        student = studentImage;
+                        _attendanceRepository.PutNewAttendance(studentImage.StudentId, courseId, true);
                     }
-                }
+                    else
+                    {
+                        Console.WriteLine($"No match found in image with ImageId: {image.ImageId}");
+                    }
+                })));
 
-                // If a match is found, return immediately
+                await Task.WhenAll(tasks);
+
                 if (matchFound)
                 {
                     return matchedImage;
@@ -104,14 +79,11 @@ namespace InzynierkaApi.Services
 
             return matchedImage;
         }
-
-
-
-        private async Task<Amazon.Rekognition.Model.Image> LoadImageAsync(byte[] imageContent)
+        private async Task<Amazon.Rekognition.Model.Image?> LoadImageAsync(byte[] imageContent)
         {
             try
             {
-                return new Amazon.Rekognition.Model.Image { Bytes = new MemoryStream(imageContent) };
+                 return  new Amazon.Rekognition.Model.Image { Bytes = new MemoryStream(imageContent) };
             }
             catch (Exception ex)
             {

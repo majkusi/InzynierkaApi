@@ -20,10 +20,11 @@ namespace InzynierkaApi.Controllers
             var listByCourse = _attendanceRepository.GetAttendanceListByCourse(courseId);
             return Ok(listByCourse);
         }
-        [HttpGet("GetByStudent/{studentId}")]
-        public IActionResult GetByStudent(int studentId)
+        [HttpGet("GetByStudent/{albumId}")]
+        public IActionResult GetByStudent(int albumId)
         {
-            var listByCourse = _attendanceRepository.GetAttendanceListByStudent(studentId);
+            var listByCourse = _attendanceRepository.GetAttendanceListByStudent(albumId);
+            
             return Ok(listByCourse);
         }
 

@@ -33,5 +33,18 @@ namespace InzynierkaApi.Repositories
                 .ToList();
         }
         // Implement other interface methods...
+
+        public List<StudentModel> GetStudentsByCourse(int courseId)
+        {
+            var students = context.Students
+                .ToList() // Materialize the query
+                .Where(student => student.CourseId != null && student.CourseId.Contains(courseId))
+                .ToList();
+
+            return students;
+        }
+
+
+
     }
 }

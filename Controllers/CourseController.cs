@@ -1,6 +1,8 @@
-﻿using InzynierkaApi.Models;
+﻿using InzynierkaApi.Context;
+using InzynierkaApi.Models;
 using InzynierkaApi.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 namespace InzynierkaApi.Controllers
 {
     [ApiController]
@@ -8,7 +10,7 @@ namespace InzynierkaApi.Controllers
     public class CourseController : Controller
     {
         private readonly ICourseRepository _courseRepository;
-
+        private readonly AttendanceContext context;
         public CourseController(ICourseRepository courseRepository)
         {
             _courseRepository = courseRepository;
@@ -46,6 +48,6 @@ namespace InzynierkaApi.Controllers
             var course = _courseRepository.GetByDate(date);
             return Ok(course);
         }
-
+  
     }
 }

@@ -1,14 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Mvc.TagHelpers;
 
-namespace InzynierkaApi.Models;
-
-public class TeacherLoginModel( string password, string email)
+namespace InzynierkaApi.Models
 {
-    [Key] public int TeacherLoginId { get; set; }
+    public class TeacherLoginModel
+    {
+        [Key]
+        public int TeacherLoginId { get; set; }
 
-    public string Password { get; set; } = password;
+        public string Password { get; set; }
 
-    [ForeignKey("TeacherModel")] public string Email { get; set; } = email;
+        [ForeignKey("TeacherModel")]
+        public string Email { get; set; }
+    }
 }

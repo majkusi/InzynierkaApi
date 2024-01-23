@@ -11,9 +11,8 @@ namespace InzynierkaApi.Models
         public int CourseId { get; set; }
         public string NameOfClass { get; set; } = nameOfClass;
         public DateTime DateOfClass { get; set; } = dateOfClass;
-
         [ForeignKey("TeacherModel")] public int TeacherId { get; set; } = teacherId;
-        public List<int>? StudentsId { get; set; } = new List<int>();
+        public List<StudentModel> Students { get; set; } = new List<StudentModel>();
 
     }
 }
