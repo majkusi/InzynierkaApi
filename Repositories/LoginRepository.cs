@@ -13,7 +13,6 @@ public class LoginRepository : ILoginRepository
 
     public bool ValidateLogin(string email, string password)
     {
-        // Check if a user with the given email and password exists
         return context.TeacherLogin.Any(user => user.Email == email && user.Password == password);
     }
 }

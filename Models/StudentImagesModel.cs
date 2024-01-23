@@ -9,11 +9,7 @@ public class StudentImagesModel
 {
     [Key]
     public int ImageId { get; set; }
-
-    // Assuming you want to store image data as a byte array
     public byte[] ImageData { get; set; }
-
-    // Foreign key linking to StudentModel
     [ForeignKey("StudentModel")]
     public int StudentId { get; set; }
     public StudentModel Student { get; set; }

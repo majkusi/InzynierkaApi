@@ -32,12 +32,11 @@ namespace InzynierkaApi.Repositories
                 .Include(s => s.StudentImages) // Załaduj relację StudentImages
                 .ToList();
         }
-        // Implement other interface methods...
 
         public List<StudentModel> GetStudentsByCourse(int courseId)
         {
             var students = context.Students
-                .ToList() // Materialize the query
+                .ToList() 
                 .Where(student => student.CourseId != null && student.CourseId.Contains(courseId))
                 .ToList();
 

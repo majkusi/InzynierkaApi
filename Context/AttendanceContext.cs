@@ -17,8 +17,8 @@ namespace InzynierkaApi.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Seed 10 instances of StudentModel
-            string[] firstNames = { "Adam", "Michał", "Andrzej", "Anna", "Katarzyna", "Mateusz", "Magdalena", "Piotr", "Karolina", "Tomasz" };
-            string[] lastNames = { "Nowak", "Kowalski", "Wiśniewski", "Wójcik", "Kamińska", "Lewandowski", "Wójcik", "Kowalczyk", "Zielińska", "Jankowski" };
+            string[] firstNames = { "Jakub", "Igor", "Karina", "Anna", "Katarzyna", "Mateusz", "Magdalena", "Piotr", "Karolina", "Tomasz" };
+            string[] lastNames = { "Nowak", "Kowalski", "Wiśniewska", "Wójcik", "Kamińska", "Lewandowski", "Wójcik", "Kowalczyk", "Zielińska", "Jankowski" };
 
             for (int i = 0; i < 10; i++)
             {
@@ -32,7 +32,7 @@ namespace InzynierkaApi.Context
             }
             for (int i = 1; i <= 10; i++)
             {
-                byte[] imageBytes = GetImageData($"C:\\Users\\igor3\\OneDrive\\Obrazy\\AttendanceCheckAppTestImages\\image{i}.jpg"); // Replace with the actual path to your image file
+                byte[] imageBytes = GetImageData($"C:\\Users\\igor3\\OneDrive\\Obrazy\\AttendanceCheckAppTestImages\\image{i}.jpg"); 
 
                 modelBuilder.Entity<StudentImagesModel>().HasData(
                     new StudentImagesModel()
@@ -53,17 +53,15 @@ namespace InzynierkaApi.Context
                     new TeacherModel($"{teacherFirstNames[i]}", $"{teacherLastNames[i]}", $"Automatyka i Robotyka", $"nauczyciel{i}@example.com")
                     {
                         TeacherId = i + 1,
-                        //CourseId = new List<int> { i + 1, i + 2, i + 3 } // Dodaj dowolne identyfikatory kursów, z którymi chcesz powiązać nauczyciela
+                        //CourseId = new List<int> { i + 1, i + 2, i + 3 } 
                     }
                 );
             }
             string[] courseNames = { "Inżynieria Oprogramowania", "Automatyka Przemysłowa", "Sensory i Układy Pomiarowe", "Technologie Mobilne", "Programowanie Robotów", "Komunikacja Człowiek-Komputer", "Sterowanie Procesami Dyskretnymi", "Robotyka Medyczna", "Systemy Wizyjne", "Automatyka i Robotyka w Medycynie" };
-            // Seed 10 instances of CourseModel
+       
             Random random = new Random();
             for (int i = 0; i < 10; i++)
-            { // Losowo wybierz trzech studentów spośród dostępnych 10 studentów
-               
-            
+            { 
                 modelBuilder.Entity<CourseModel>().HasData(
                     new CourseModel($"{courseNames[i]}", i + 1, DateTime.Now.AddDays(i))
                     {

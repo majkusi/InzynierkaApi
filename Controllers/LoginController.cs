@@ -1,37 +1,33 @@
 ﻿using InzynierkaApi.Models;
 using InzynierkaApi.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using InzynierkaApi.Services;
+
 namespace InzynierkaApi.Controllers
 {
     [ApiController]
     [Route("Login/")]
-    public class LoginController : Controller
+    public class LoginController : ControllerBase
     {
-        private readonly ILoginRepository _loginRepository;
-
-        public LoginController(ILoginRepository loginRepository)
+        private  LoginService _loginService;
+        public LoginController(LoginService loginService)
         {
-            _loginRepository = loginRepository;
+            _loginService = loginService;
         }
-
-        [HttpGet("{email}/{password}")]
-        public IActionResult Login(string email, string password)
+        [HttpPost("GiveCredentials")]
+        public IActionResult Login([FromBody] TeacherLoginModel model)
         {
-            // Validate login credentials
-            bool isValidLogin = _loginRepository.ValidateLogin(email, password);
-
-            if (isValidLogin)
+            if (_loginService.IsValidUser(model.Email, model.Password))
             {
-                // Return a success response
-                return Ok("Login successful");
+                var token = _loginService.GenerateJwtToken(model.Email);
+                return Ok(new { Token = token });
             }
-            else
-            {
-                // Return an error response
-                return BadRequest("Invalid login credentials");
-            }
+            return Unauthorized();
         }
-
     }
 }
 

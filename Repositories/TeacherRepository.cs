@@ -42,7 +42,6 @@ public class TeacherRepository : ITeacherRepository
         }
         this.disposed = true;
     }
-
     public void Dispose()
     {
         Dispose(true);

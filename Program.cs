@@ -2,7 +2,10 @@ using Amazon.Rekognition;
 using InzynierkaApi.Context;
 using InzynierkaApi.Repositories;
 using InzynierkaApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +30,7 @@ builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<ITeacherRepository,TeacherRepository>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
-
+builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<FaceRecognitionService>(_ =>
 {
     var similarityThreshold = float.Parse(builder.Configuration["FaceRecognition:SimilarityThreshold"]);
@@ -42,8 +45,27 @@ builder.Services.AddScoped<AmazonRekognitionClient>(_ =>
 {
     var awsAccessKey = builder.Configuration["AWS:AccessKey"];
     var awsSecretKey = builder.Configuration["AWS:SecretKey"];
-    return new AmazonRekognitionClient(awsAccessKey, awsSecretKey, Amazon.RegionEndpoint.EUCentral1); // Replace YourRegion with your actual AWS region
+     return new AmazonRekognitionClient(awsAccessKey, awsSecretKey, Amazon.RegionEndpoint.EUCentral1); // Replace YourRegion with your actual AWS region
 });
+// Login service 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "your-issuer",
+        ValidAudience = "your-audience",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("awsf7r6546g67s5edf765a76d5gf76as789sdfb6sd7fszd"))
+    };
+});
+
 // Db connectrion
 var connection = string.Empty;
 if (builder.Environment.IsDevelopment())
@@ -63,7 +85,7 @@ builder.Services.AddDbContext<AttendanceContext>(options =>
 
 var app = builder.Build();
 app.UseCors("AllowAllOrigins");
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
