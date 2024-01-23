@@ -1,11 +1,15 @@
 ﻿using InzynierkaApi.Models;
 using InzynierkaApi.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 namespace InzynierkaApi.Controllers
 {
     [ApiController]
     [Route("Login/")]
-    public class LoginController : Controller
+    public class LoginController : ControllerBase
     {
         private readonly ILoginRepository _loginRepository;
 
@@ -13,23 +17,39 @@ namespace InzynierkaApi.Controllers
         {
             _loginRepository = loginRepository;
         }
-
-        [HttpGet("{email}/{password}")]
-        public IActionResult Login(string email, string password)
+       
+        [HttpPost("GiveCredentials")]
+        public IActionResult Login([FromBody] TeacherLoginModel model)
         {
-            // Validate login credentials
-            bool isValidLogin = _loginRepository.ValidateLogin(email, password);
+            // Validate user credentials (you may use a database here)
+            if (IsValidUser(model.Email, model.Password))
+            {
+                var token = GenerateJwtToken(model.Email);
+                return Ok(new { Token = token });
+            }
 
-            if (isValidLogin)
+            return Unauthorized();
+        }
+
+        private bool IsValidUser(string username, string password)
+        {
+            // Implement your user validation logic (e.g., check against a database)
+            return _loginRepository.ValidateLogin(username, password);
+        }
+
+        private string GenerateJwtToken(string username)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes("your-secret-key-should-be-longer-and-secure");
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                // Return a success response
-                return Ok("Login successful");
-            }
-            else
-            {
-                // Return an error response
-                return BadRequest("Invalid login credentials");
-            }
+                Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials =
+                    new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
 
     }

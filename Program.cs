@@ -2,7 +2,10 @@ using Amazon.Rekognition;
 using InzynierkaApi.Context;
 using InzynierkaApi.Repositories;
 using InzynierkaApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,8 +45,27 @@ builder.Services.AddScoped<AmazonRekognitionClient>(_ =>
 {
     var awsAccessKey = builder.Configuration["AWS:AccessKey"];
     var awsSecretKey = builder.Configuration["AWS:SecretKey"];
-    return new AmazonRekognitionClient(awsAccessKey, awsSecretKey, Amazon.RegionEndpoint.EUCentral1); // Replace YourRegion with your actual AWS region
+     return new AmazonRekognitionClient(awsAccessKey, awsSecretKey, Amazon.RegionEndpoint.EUCentral1); // Replace YourRegion with your actual AWS region
 });
+// Login service 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "your-issuer",
+        ValidAudience = "your-audience",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key-should-be-longer-and-secure"))
+    };
+});
+
 // Db connectrion
 var connection = string.Empty;
 if (builder.Environment.IsDevelopment())
