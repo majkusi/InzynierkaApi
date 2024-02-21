@@ -62,7 +62,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = "your-issuer",
         ValidAudience = "your-audience",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-secret-key-should-be-longer-and-secure"))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("awsf7r6546g67s5edf765a76d5gf76as789sdfb6sd7fszd"))
     };
 });
 
